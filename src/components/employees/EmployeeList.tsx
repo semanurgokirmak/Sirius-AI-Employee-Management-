@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { Employee } from '../../types/employee';
 import { EmployeeForm } from './EmployeeForm';
+import { DeleteConfirmation } from './DeleteConfirmation';
 
 export const EmployeeList = () => {
   // State tanımlamaları
   const [isFormOpen, setIsFormOpen] = useState(false); //çalışan ekleme düzenleme formunun açık mı kapalı mı olduğunu kontrol eder
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | undefined>(undefined); //bilgileri düzenlenecek çalışsanın bilgilerini tutar
+  const [isDeleteModalOpen, setIsDeleteModalOpen]=useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
 
   // Örnek veri
   const sampleEmployees: Employee[] = [
@@ -37,6 +40,19 @@ export const EmployeeList = () => {
   const handleEdit = (employee: Employee) => {
     setSelectedEmployee(employee); //seçilen çalışanın bilgilerini state'e kaydeder böylece edite tıklandığında çalışanın verileri formda görülür
     setIsFormOpen(true); //form modalını açar
+  };
+
+  const handleDelete = (employee: Employee) => {
+    setEmployeeToDelete(employee);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (employeeToDelete) {
+      console.log('Deleting employee:', employeeToDelete);
+      setIsDeleteModalOpen(false);
+      setEmployeeToDelete(null);
+    }
   };
 
   return (
@@ -92,7 +108,12 @@ export const EmployeeList = () => {
                   >
                     Edit
                   </button>
-                  <button className="text-red-600 hover:text-red-900">Delete</button>
+                  <button 
+                    onClick={() => handleDelete(employee)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -108,6 +129,15 @@ export const EmployeeList = () => {
           setSelectedEmployee(undefined); //seçili çalışanı temizliyor
         }}
         employee={selectedEmployee}  //düzenlenecek çalışan bilgisi
+      />
+      <DeleteConfirmation 
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setEmployeeToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        employeeName={employeeToDelete ? `${employeeToDelete.firstName} ${employeeToDelete.lastName}` : ''}
       />
     </div>
   );
