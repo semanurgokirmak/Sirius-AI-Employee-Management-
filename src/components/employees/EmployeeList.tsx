@@ -1,7 +1,13 @@
+import { useState } from 'react';
 import { Employee } from '../../types/employee';
+import { EmployeeForm } from './EmployeeForm';
 
 export const EmployeeList = () => {
-  // Örnek kişiler
+  // State tanımlamaları
+  const [isFormOpen, setIsFormOpen] = useState(false); //çalışan ekleme düzenleme formunun açık mı kapalı mı olduğunu kontrol eder
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | undefined>(undefined); //bilgileri düzenlenecek çalışsanın bilgilerini tutar
+
+  // Örnek veri
   const sampleEmployees: Employee[] = [
     {
       id: 1,
@@ -27,12 +33,21 @@ export const EmployeeList = () => {
     }
   ];
 
+  // Edit butonuna tıklandığında çalışacak fonksiyon
+  const handleEdit = (employee: Employee) => {
+    setSelectedEmployee(employee); //seçilen çalışanın bilgilerini state'e kaydeder böylece edite tıklandığında çalışanın verileri formda görülür
+    setIsFormOpen(true); //form modalını açar
+  };
+
   return (
     <div className="p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Employees</h1>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+        <button 
+          onClick={() => setIsFormOpen(true)}  //tıklandığında useState true bilgisini gönder
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+        >
           Add New Employee
         </button>
       </div>
@@ -71,7 +86,12 @@ export const EmployeeList = () => {
                   {employee.position}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button className="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                  <button 
+                    onClick={() => handleEdit(employee)}
+                    className="text-indigo-600 hover:text-indigo-900 mr-3"
+                  >
+                    Edit
+                  </button>
                   <button className="text-red-600 hover:text-red-900">Delete</button>
                 </td>
               </tr>
@@ -79,6 +99,16 @@ export const EmployeeList = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Employee Form Modal */}
+      <EmployeeForm 
+        isOpen={isFormOpen}  //formun açık olup olmadığını kontrol ediyor
+        onClose={() => {   //form kapanınca bu fonksiyon çalışacak
+          setIsFormOpen(false);  //form kapatıyor
+          setSelectedEmployee(undefined); //seçili çalışanı temizliyor
+        }}
+        employee={selectedEmployee}  //düzenlenecek çalışan bilgisi
+      />
     </div>
   );
 };
