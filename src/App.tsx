@@ -1,14 +1,19 @@
+import { EmployeeList } from './components/employees/EmployeeList';
+
 function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold text-blue-600 mb-4">
-          Employee Management
-        </h1>
-        <p className="text-gray-600"> {/* text-gray-white yerine text-gray-600 */}
-          Tailwind test için oluşturuldu
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-100">
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
+            <h1 className="text-xl font-bold text-gray-900">Employee Management</h1>
+          </div>
+        </div>
+      </nav>
+      
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <EmployeeList />
+      </main>
     </div>
   );
 }
