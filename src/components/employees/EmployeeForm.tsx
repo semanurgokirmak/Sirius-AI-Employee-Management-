@@ -50,7 +50,7 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
         email: '',
         phoneNumber: '',
         department: ('' as unknown) as 'Analytics' | 'Tech',
-position: ('' as unknown) as 'Junior' | 'Medior' | 'Senior',
+        position: ('' as unknown) as 'Junior' | 'Medior' | 'Senior',
         dateOfBirth: undefined,
         dateOfEmployment: undefined,
       });
@@ -89,7 +89,17 @@ position: ('' as unknown) as 'Junior' | 'Medior' | 'Senior',
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div 
+      className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+      onClick={(e) => {
+        // İşlem devam ediyorsa kapanmayı engelle
+        if (isSubmitting) return;
+        // Sadece arka plana tıklandığında kapanacak
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div className="mt-3">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
