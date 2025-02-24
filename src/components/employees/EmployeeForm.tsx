@@ -3,16 +3,21 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Employee } from '../../types/employee';
 import { employeeSchema, EmployeeFormData } from '../../utils/validation';
 import { useState, useEffect } from 'react';
+import { useEmployeeStore } from '../../store/employeeStore';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface EmployeeFormProps {
   isOpen: boolean;
   onClose: () => void;
   employee?: Employee;
-  onSubmit?: (data: EmployeeFormData, employeeId?: number) => Promise<void>;
 }
 
-export const EmployeeForm = ({ isOpen, onClose, employee, onSubmit }: EmployeeFormProps) => {
+export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Zustand store'dan action'ları alıyoruz
+  const { createEmployee, updateEmployee } = useEmployeeStore();
 
   const {
     register,
@@ -21,17 +26,6 @@ export const EmployeeForm = ({ isOpen, onClose, employee, onSubmit }: EmployeeFo
     reset
   } = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema),
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phoneNumber: '',
-      // İlk yükleme için boş değer olarak 'Tech' veya 'Analytics' kullanıyoruz
-      department: '' as any, // Boş string ile başla, validation hata verecek ama form render edilecek
-      position: '' as any, // Boş string ile başla, validation hata verecek ama form render edilecek
-      dateOfBirth: undefined,
-      dateOfEmployment: undefined,
-    }
   });
 
   // Employee değiştiğinde formu resetliyoruz
@@ -55,8 +49,8 @@ export const EmployeeForm = ({ isOpen, onClose, employee, onSubmit }: EmployeeFo
         lastName: '',
         email: '',
         phoneNumber: '',
-        department: '' as any, // Boş string kullanıyoruz
-        position: '' as any, // Boş string kullanıyoruz
+        department: ('' as unknown) as 'Analytics' | 'Tech',
+position: ('' as unknown) as 'Junior' | 'Medior' | 'Senior',
         dateOfBirth: undefined,
         dateOfEmployment: undefined,
       });
@@ -64,11 +58,19 @@ export const EmployeeForm = ({ isOpen, onClose, employee, onSubmit }: EmployeeFo
   }, [employee, reset]);
 
   const handleFormSubmit = async (data: EmployeeFormData) => {
-    if (!onSubmit) return;
-    
     setIsSubmitting(true);
     try {
-      await onSubmit(data, employee?.id ? Number(employee.id) : undefined);
+      if (employee?.id) {
+        // Güncelleme işlemi
+        await updateEmployee(data, String(employee.id));
+      } else {
+        // Ekleme işlemi
+        await createEmployee(data);
+      }
+      
+      // Cache'i yenile
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      onClose();
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {

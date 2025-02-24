@@ -1,86 +1,58 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Employee } from '../../types/employee';
 import { EmployeeForm } from './EmployeeForm';
 import { DeleteConfirmation } from './DeleteConfirmation';
 import { employeeApi } from '../../api/employeeApi';
-import { EmployeeFormData } from '../../utils/validation';
 import toast from 'react-hot-toast';
+import { useEmployeeStore } from '../../store/employeeStore';
 
 export const EmployeeList = () => {
-  // Query Client'ı alıyoruz - cache'i yönetmek için kullanacağız
+  // Query Client'ı alıyoruz
   const queryClient = useQueryClient();
   
-  // State tanımlamaları
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | undefined>(undefined);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
+  // Zustand store'dan state ve action'ları alıyoruz
+  const {
+    isFormOpen,
+    selectedEmployee,
+    isDeleteModalOpen,
+    employeeToDelete,
+    openForm,
+    closeForm,
+    selectEmployee,
+    openDeleteModal,
+    closeDeleteModal,
+    deleteEmployee
+  } = useEmployeeStore();
+  
+  // Yerel state sadece pagination için kullanılıyor
   const [currentPage, setCurrentPage] = useState(1);
 
   // TanStack Query ile veri çekme
   const {
-    data = [], // Eğer data undefined ise boş array kullan
+    data = [],
     isLoading,
     error
   } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-    try {
-      const employees = await employeeApi.getEmployees();
-      // API'den string olarak gelen tarihleri Date objelerine çeviriyoruz
-      return employees.map(employee => ({
-        ...employee,
-        dateOfBirth: new Date(employee.dateOfBirth),
-        dateOfEmployment: new Date(employee.dateOfEmployment)
-      }));
-    } catch (error) {
-      toast.error('Failed to load employees');
-      throw error;
-  }
-  }
-});
-
-  // Çalışan silme mutation'ı
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => employeeApi.deleteEmployee(id),
-    onSuccess: () => {
-      // Başarılı silme işleminden sonra listeyi yenile
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      setIsDeleteModalOpen(false);
-      setEmployeeToDelete(null);
-      toast.success('Employee deleted successfully');
-    },
-    onError: () => {
-      toast.error('Failed to delete employee');
+      try {
+        const employees = await employeeApi.getEmployees();
+        // API'den string olarak gelen tarihleri Date objelerine çeviriyoruz
+        return employees.map(employee => ({
+          ...employee,
+          dateOfBirth: new Date(employee.dateOfBirth),
+          dateOfEmployment: new Date(employee.dateOfEmployment)
+        }));
+      } catch (error) {
+        toast.error('Failed to load employees');
+        throw error;
+      }
     }
   });
 
   // API'den gelen veriler
-  const employees: Employee[] = data.length > 0 ? data : [
-    {
-      id: 1,
-      firstName: "John",
-      lastName: "Doe",
-      dateOfEmployment: new Date("2023-01-15"),
-      dateOfBirth: new Date("1990-05-20"),
-      phoneNumber: "555-0123",
-      email: "john@example.com",
-      department: "Tech",
-      position: "Senior"
-    },
-    {
-      id: 2,
-      firstName: "Jane",
-      lastName: "Smith",
-      dateOfEmployment: new Date("2023-03-10"),
-      dateOfBirth: new Date("1992-08-15"),
-      phoneNumber: "555-0124",
-      email: "jane@example.com",
-      department: "Analytics",
-      position: "Medior"
-    }
-  ];
+  const employees: Employee[] = data;
 
   // Pagination değerleri
   const itemsPerPage = 5;
@@ -91,46 +63,17 @@ export const EmployeeList = () => {
 
   // Handler fonksiyonları
   const handleEdit = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setIsFormOpen(true);
+    selectEmployee(employee);
   };
 
   const handleDelete = (employee: Employee) => {
-    setEmployeeToDelete(employee);
-    setIsDeleteModalOpen(true);
+    openDeleteModal(employee);
   };
 
-  const handleConfirmDelete = () => {
-    if (employeeToDelete) {
-      deleteMutation.mutate(Number(employeeToDelete.id));
-      // Modal kapatma işlemi mutation'ın onSuccess callback'inde yapılıyor
-    }
-  };
-  
-  // Form Submit Handler - ekleme ve güncelleme için
-  const handleFormSubmit = async (employeeData: EmployeeFormData, employeeId?: number) => {
-    try {
-      if (employeeId) {
-        // Güncelleme işlemi
-        await employeeApi.updateEmployee(Number(employeeId), employeeData);
-        toast.success('Employee updated successfully');
-      } else {
-        // Ekleme işlemi
-        await employeeApi.createEmployee(employeeData);
-        toast.success('Employee added successfully');
-      }
-      
-      // Cache'i yenile ve formu kapat
+  const handleConfirmDelete = async () => {
+    if (employeeToDelete?.id) {
+      await deleteEmployee(String(employeeToDelete.id));
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      setIsFormOpen(false);
-      setSelectedEmployee(undefined);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast.error(
-        employeeId 
-          ? 'Failed to update employee' 
-          : 'Failed to add employee'
-      );
     }
   };
 
@@ -140,7 +83,7 @@ export const EmployeeList = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Employees</h1>
         <button 
-          onClick={() => setIsFormOpen(true)}
+          onClick={openForm}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
         >
           Add New Employee
@@ -215,7 +158,7 @@ export const EmployeeList = () => {
                           onClick={() => handleDelete(employee)}
                           className="text-red-600 hover:text-red-900 min-w-[40px]"
                         >
-                          {deleteMutation.isPending && employeeToDelete?.id === employee.id ? 'Deleting...' : 'Delete'}
+                          Delete
                         </button>
                       </td>
                     </tr>
@@ -290,22 +233,15 @@ export const EmployeeList = () => {
       {/* Modals */}
       <EmployeeForm 
         isOpen={isFormOpen}
-        onClose={() => {
-          setIsFormOpen(false);
-          setSelectedEmployee(undefined);
-        }}
+        onClose={closeForm}
         employee={selectedEmployee}
-        onSubmit={handleFormSubmit}
       />
       <DeleteConfirmation 
         isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setEmployeeToDelete(null);
-        }}
+        onClose={closeDeleteModal}
         onConfirm={handleConfirmDelete}
         employeeName={employeeToDelete ? `${employeeToDelete.firstName} ${employeeToDelete.lastName}` : ''}
-        isDeleting={deleteMutation.isPending}
+        isDeleting={false}
       />
     </div>
   );

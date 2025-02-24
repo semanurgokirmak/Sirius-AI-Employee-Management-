@@ -49,7 +49,7 @@ export const employeeApi = {
   },
 
   // Çalışan bilgilerini güncelleyen fonksiyon
-  updateEmployee: async (id: number, employee: Partial<Employee>): Promise<Employee> => {
+  updateEmployee: async (id: string | number, employee: Partial<Employee>): Promise<Employee> => {
     const response = await fetch(`${API_URL}/employees/${id}`, {
       method: 'PUT',
       headers: {
@@ -64,7 +64,7 @@ export const employeeApi = {
   },
 
   // Çalışan silen fonksiyon
-  deleteEmployee: async (id: number): Promise<void> => {
+  deleteEmployee: async (id: string | number): Promise<void> => {
     const response = await fetch(`${API_URL}/employees/${id}`, {
       method: 'DELETE',
     });
