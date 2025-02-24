@@ -1,20 +1,53 @@
 import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Employee } from '../../types/employee';
 import { EmployeeForm } from './EmployeeForm';
 import { DeleteConfirmation } from './DeleteConfirmation';
+import { employeeApi } from '../../api/employeeApi';
+import { EmployeeFormData } from '../../utils/validation';
 
 export const EmployeeList = () => {
+  // Query Client'ı alıyoruz - cache'i yönetmek için kullanacağız
+  const queryClient = useQueryClient();
+  
   // State tanımlamaları
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | undefined>(undefined);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Örnek veri
-  const sampleEmployees: Employee[] = [
+  // TanStack Query ile veri çekme
+  const {
+    data = [], // Eğer data undefined ise boş array kullan
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ['employees'],
+    queryFn: async () => {
+      const employees = await employeeApi.getEmployees();
+      // API'den string olarak gelen tarihleri Date objelerine çeviriyoruz
+      return employees.map(employee => ({
+        ...employee,
+        dateOfBirth: new Date(employee.dateOfBirth),
+        dateOfEmployment: new Date(employee.dateOfEmployment)
+      }));
+    }
+  });
+
+  // Çalışan silme mutation'ı
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => employeeApi.deleteEmployee(id),
+    onSuccess: () => {
+      // Başarılı silme işleminden sonra listeyi yenile
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      setIsDeleteModalOpen(false);
+      setEmployeeToDelete(null);
+    }
+  });
+
+  // API'den gelen veriler
+  const employees: Employee[] = data.length > 0 ? data : [
     {
       id: 1,
       firstName: "John",
@@ -36,81 +69,15 @@ export const EmployeeList = () => {
       email: "jane@example.com",
       department: "Analytics",
       position: "Medior"
-    },
-    {
-      id: 3,
-      firstName: "Alice",
-      lastName: "Johnson",
-      dateOfEmployment: new Date("2023-02-20"),
-      dateOfBirth: new Date("1988-12-10"),
-      phoneNumber: "555-0125",
-      email: "alice@example.com",
-      department: "Tech",
-      position: "Junior"
-    },
-    {
-      id: 4,
-      firstName: "Bob",
-      lastName: "Wilson",
-      dateOfEmployment: new Date("2023-04-05"),
-      dateOfBirth: new Date("1991-03-25"),
-      phoneNumber: "555-0126",
-      email: "bob@example.com",
-      department: "Analytics",
-      position: "Senior"
-    },
-    {
-      id: 5,
-      firstName: "Charlie",
-      lastName: "Brown",
-      dateOfEmployment: new Date("2023-05-15"),
-      dateOfBirth: new Date("1993-07-30"),
-      phoneNumber: "555-0127",
-      email: "charlie@example.com",
-      department: "Tech",
-      position: "Medior"
-    },
-    {
-      id: 6,
-      firstName: "Diana",
-      lastName: "Martinez",
-      dateOfEmployment: new Date("2023-06-20"),
-      dateOfBirth: new Date("1990-09-12"),
-      phoneNumber: "555-0128",
-      email: "diana@example.com",
-      department: "Analytics",
-      position: "Junior"
-    },
-    {
-      id: 7,
-      firstName: "Edward",
-      lastName: "Taylor",
-      dateOfEmployment: new Date("2023-07-10"),
-      dateOfBirth: new Date("1989-11-05"),
-      phoneNumber: "555-0129",
-      email: "edward@example.com",
-      department: "Tech",
-      position: "Senior"
-    },
-    {
-      id: 8,
-      firstName: "Fiona",
-      lastName: "Garcia",
-      dateOfEmployment: new Date("2023-08-01"),
-      dateOfBirth: new Date("1994-04-18"),
-      phoneNumber: "555-0130",
-      email: "fiona@example.com",
-      department: "Analytics",
-      position: "Medior"
     }
   ];
 
   // Pagination değerleri
   const itemsPerPage = 5;
-  const totalPages = Math.ceil(sampleEmployees.length / itemsPerPage);
+  const totalPages = Math.ceil(employees.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentEmployees = sampleEmployees.slice(startIndex, endIndex);
+  const currentEmployees = employees.slice(startIndex, endIndex);
 
   // Handler fonksiyonları
   const handleEdit = (employee: Employee) => {
@@ -125,9 +92,28 @@ export const EmployeeList = () => {
 
   const handleConfirmDelete = () => {
     if (employeeToDelete) {
-      console.log('Deleting employee:', employeeToDelete);
-      setIsDeleteModalOpen(false);
-      setEmployeeToDelete(null);
+      deleteMutation.mutate(Number(employeeToDelete.id));
+      // Modal kapatma işlemi mutation'ın onSuccess callback'inde yapılıyor
+    }
+  };
+  
+  // Form Submit Handler - ekleme ve güncelleme için
+  const handleFormSubmit = async (employeeData: EmployeeFormData, employeeId?: number) => {
+    try {
+      if (employeeId) {
+        // Güncelleme işlemi
+        await employeeApi.updateEmployee(Number(employeeId), employeeData);
+      } else {
+        // Ekleme işlemi
+        await employeeApi.createEmployee(employeeData);
+      }
+      
+      // Cache'i yenile ve formu kapat
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      setIsFormOpen(false);
+      setSelectedEmployee(undefined);
+    } catch (error) {
+      console.error('Error submitting form:', error);
     }
   };
 
@@ -147,7 +133,7 @@ export const EmployeeList = () => {
       {/* Error State */}
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative">
-          {error}
+          Error loading employees. Please try again.
         </div>
       )}
 
@@ -195,18 +181,18 @@ export const EmployeeList = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {employee.position}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex-shrink-0">
                     <button 
                       onClick={() => handleEdit(employee)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-3"
+                      className="text-indigo-600 hover:text-indigo-900 mr-3 min-w-[40px]"
                     >
                       Edit
                     </button>
                     <button 
                       onClick={() => handleDelete(employee)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 min-w-[40px]"
                     >
-                      Delete
+                      {deleteMutation.isPending && employeeToDelete?.id === employee.id ? 'Deleting...' : 'Delete'}
                     </button>
                   </td>
                 </tr>
@@ -235,9 +221,9 @@ export const EmployeeList = () => {
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
-                  <span className="font-medium">{Math.min(endIndex, sampleEmployees.length)}</span> of{' '}
-                  <span className="font-medium">{sampleEmployees.length}</span> results
+                  Showing <span className="font-medium">{employees.length > 0 ? startIndex + 1 : 0}</span> to{' '}
+                  <span className="font-medium">{Math.min(endIndex, employees.length)}</span> of{' '}
+                  <span className="font-medium">{employees.length}</span> results
                 </p>
               </div>
               <div>
@@ -284,6 +270,7 @@ export const EmployeeList = () => {
           setSelectedEmployee(undefined);
         }}
         employee={selectedEmployee}
+        onSubmit={handleFormSubmit}
       />
       <DeleteConfirmation 
         isOpen={isDeleteModalOpen}
@@ -293,6 +280,7 @@ export const EmployeeList = () => {
         }}
         onConfirm={handleConfirmDelete}
         employeeName={employeeToDelete ? `${employeeToDelete.firstName} ${employeeToDelete.lastName}` : ''}
+        isDeleting={deleteMutation.isPending}
       />
     </div>
   );

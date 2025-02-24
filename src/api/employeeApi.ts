@@ -3,14 +3,25 @@ import { Employee } from '../types/employee';
 // API'nin temel URL'ini tanımlıyoruz
 const API_URL = 'http://localhost:3000/api';
 
+// API'den dönen veri yapısı
+interface ApiResponse<T> {
+  data: T;
+  pagination?: {
+    total: number;
+    currentPage: number;
+    totalPages: number;
+  };
+}
+
 export const employeeApi = {
   // Tüm çalışanları getiren fonksiyon
   getEmployees: async (): Promise<Employee[]> => {
-    const response = await fetch(`${API_URL}/employees`);
+    const response = await fetch(`${API_URL}/employees?page=1&limit=100`);
     if (!response.ok) {
       throw new Error('Failed to fetch employees');
     }
-    return response.json();
+    const result: ApiResponse<Employee[]> = await response.json();
+    return result.data;
   },
 
   // Tek bir çalışanı getiren fonksiyon

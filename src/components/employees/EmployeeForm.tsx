@@ -2,15 +2,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Employee } from '../../types/employee';
 import { employeeSchema, EmployeeFormData } from '../../utils/validation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface EmployeeFormProps {
   isOpen: boolean;
   onClose: () => void;
   employee?: Employee;
+  onSubmit?: (data: EmployeeFormData, employeeId?: number) => Promise<void>;
 }
 
-export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) => {
+export const EmployeeForm = ({ isOpen, onClose, employee, onSubmit }: EmployeeFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -20,21 +21,54 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
     reset
   } = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema),
-    defaultValues: employee ? {
-      ...employee,
-      dateOfBirth: new Date(employee.dateOfBirth),
-      dateOfEmployment: new Date(employee.dateOfEmployment),
-    } : undefined
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      // İlk yükleme için boş değer olarak 'Tech' veya 'Analytics' kullanıyoruz
+      department: '' as any, // Boş string ile başla, validation hata verecek ama form render edilecek
+      position: '' as any, // Boş string ile başla, validation hata verecek ama form render edilecek
+      dateOfBirth: undefined,
+      dateOfEmployment: undefined,
+    }
   });
 
-  const onSubmit = async (data: EmployeeFormData) => {
+  // Employee değiştiğinde formu resetliyoruz
+  useEffect(() => {
+    if (employee) {
+      // Tüm değerleri set ediyoruz
+      reset({
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        email: employee.email,
+        phoneNumber: employee.phoneNumber,
+        department: employee.department,
+        position: employee.position,
+        dateOfBirth: new Date(employee.dateOfBirth),
+        dateOfEmployment: new Date(employee.dateOfEmployment)
+      });
+    } else {
+      // Yeni çalışan ekleme modunda formu temizliyoruz
+      reset({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        department: '' as any, // Boş string kullanıyoruz
+        position: '' as any, // Boş string kullanıyoruz
+        dateOfBirth: undefined,
+        dateOfEmployment: undefined,
+      });
+    }
+  }, [employee, reset]);
+
+  const handleFormSubmit = async (data: EmployeeFormData) => {
+    if (!onSubmit) return;
+    
     setIsSubmitting(true);
     try {
-      // API call simulation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Form data:', data);
-      onClose();
-      reset();
+      await onSubmit(data, employee?.id ? Number(employee.id) : undefined);
     } catch (error) {
       console.error('Error submitting form:', error);
     } finally {
@@ -53,14 +87,14 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div className="mt-3">
           <h3 className="text-lg font-medium leading-6 text-gray-900">
             {employee ? 'Edit Employee' : 'Add New Employee'}
           </h3>
           
-          <form className="mt-4" onSubmit={handleSubmit(onSubmit)}>
+          <form className="mt-4" onSubmit={handleSubmit(handleFormSubmit)}>
             {/* Ad Soyad */}
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
@@ -124,7 +158,7 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
                 <input
                   type="date"
                   {...register('dateOfBirth', {
-                    setValueAs: (value: string) => value ? new Date(value) : undefined
+                    valueAsDate: true
                   })}
                   className={getInputClassName('dateOfBirth')}
                   disabled={isSubmitting}
@@ -138,7 +172,7 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
                 <input
                   type="date"
                   {...register('dateOfEmployment', {
-                    setValueAs: (value: string) => value ? new Date(value) : undefined
+                    valueAsDate: true
                   })}
                   className={getInputClassName('dateOfEmployment')}
                   disabled={isSubmitting}
