@@ -5,6 +5,7 @@ import { EmployeeForm } from './EmployeeForm';
 import { DeleteConfirmation } from './DeleteConfirmation';
 import { employeeApi } from '../../api/employeeApi';
 import { EmployeeFormData } from '../../utils/validation';
+import toast from 'react-hot-toast';
 
 export const EmployeeList = () => {
   // Query Client'ı alıyoruz - cache'i yönetmek için kullanacağız
@@ -25,6 +26,7 @@ export const EmployeeList = () => {
   } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
+    try {
       const employees = await employeeApi.getEmployees();
       // API'den string olarak gelen tarihleri Date objelerine çeviriyoruz
       return employees.map(employee => ({
@@ -32,8 +34,12 @@ export const EmployeeList = () => {
         dateOfBirth: new Date(employee.dateOfBirth),
         dateOfEmployment: new Date(employee.dateOfEmployment)
       }));
-    }
-  });
+    } catch (error) {
+      toast.error('Failed to load employees');
+      throw error;
+  }
+  }
+});
 
   // Çalışan silme mutation'ı
   const deleteMutation = useMutation({
@@ -43,6 +49,10 @@ export const EmployeeList = () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       setIsDeleteModalOpen(false);
       setEmployeeToDelete(null);
+      toast.success('Employee deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete employee');
     }
   });
 
@@ -103,9 +113,11 @@ export const EmployeeList = () => {
       if (employeeId) {
         // Güncelleme işlemi
         await employeeApi.updateEmployee(Number(employeeId), employeeData);
+        toast.success('Employee updated successfully');
       } else {
         // Ekleme işlemi
         await employeeApi.createEmployee(employeeData);
+        toast.success('Employee added successfully');
       }
       
       // Cache'i yenile ve formu kapat
@@ -114,6 +126,11 @@ export const EmployeeList = () => {
       setSelectedEmployee(undefined);
     } catch (error) {
       console.error('Error submitting form:', error);
+      toast.error(
+        employeeId 
+          ? 'Failed to update employee' 
+          : 'Failed to add employee'
+      );
     }
   };
 
@@ -150,115 +167,123 @@ export const EmployeeList = () => {
       ) : (
         /* Table */
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentEmployees.map((employee) => (
-                <tr key={employee.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {employee.firstName} {employee.lastName}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{employee.email}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      employee.department === 'Tech' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {employee.department}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {employee.position}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex-shrink-0">
-                    <button 
-                      onClick={() => handleEdit(employee)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-3 min-w-[40px]"
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(employee)}
-                      className="text-red-600 hover:text-red-900 min-w-[40px]"
-                    >
-                      {deleteMutation.isPending && employeeToDelete?.id === employee.id ? 'Deleting...' : 'Delete'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* Pagination */}
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                onClick={() => setCurrentPage(page => Math.max(page - 1, 1))}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setCurrentPage(page => Math.min(page + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
-              >
-                Next
-              </button>
+          {employees.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              No employees found. Click "Add New Employee" to create one.
             </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{employees.length > 0 ? startIndex + 1 : 0}</span> to{' '}
-                  <span className="font-medium">{Math.min(endIndex, employees.length)}</span> of{' '}
-                  <span className="font-medium">{employees.length}</span> results
-                </p>
-              </div>
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+          ) : (
+            <>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {currentEmployees.map((employee) => (
+                    <tr key={employee.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {employee.firstName} {employee.lastName}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{employee.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          employee.department === 'Tech' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {employee.department}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {employee.position}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex-shrink-0">
+                        <button 
+                          onClick={() => handleEdit(employee)}
+                          className="text-indigo-600 hover:text-indigo-900 mr-3 min-w-[40px]"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(employee)}
+                          className="text-red-600 hover:text-red-900 min-w-[40px]"
+                        >
+                          {deleteMutation.isPending && employeeToDelete?.id === employee.id ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Pagination */}
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="flex-1 flex justify-between sm:hidden">
                   <button
                     onClick={() => setCurrentPage(page => Math.max(page - 1, 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
                   >
                     Previous
                   </button>
-                  {[...Array(totalPages)].map((_, index) => (
-                    <button
-                      key={index + 1}
-                      onClick={() => setCurrentPage(index + 1)}
-                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                        currentPage === index + 1
-                          ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
                   <button
                     onClick={() => setCurrentPage(page => Math.min(page + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
                   >
                     Next
                   </button>
-                </nav>
+                </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing <span className="font-medium">{employees.length > 0 ? startIndex + 1 : 0}</span> to{' '}
+                      <span className="font-medium">{Math.min(endIndex, employees.length)}</span> of{' '}
+                      <span className="font-medium">{employees.length}</span> results
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                      <button
+                        onClick={() => setCurrentPage(page => Math.max(page - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+                      >
+                        Previous
+                      </button>
+                      {[...Array(totalPages)].map((_, index) => (
+                        <button
+                          key={index + 1}
+                          onClick={() => setCurrentPage(index + 1)}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            currentPage === index + 1
+                              ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
+                              : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                          }`}
+                        >
+                          {index + 1}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setCurrentPage(page => Math.min(page + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       )}
 
