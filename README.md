@@ -1,50 +1,127 @@
-# React + TypeScript + Vite
+Employee Management Application
+Bu proje, şirket çalışanlarının bilgilerini yönetmek için React ve TypeScript kullanılarak geliştirilmiş modern bir web uygulamasıdır.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Özellikler
 
-Currently, two official plugins are available:
+Çalışan listesi görüntüleme
+Yeni çalışan ekleme
+Mevcut çalışan bilgilerini düzenleme
+Çalışan silme
+Form validasyonu
+Responsive tasarım
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Teknoloji Stack'i
 
-## Expanding the ESLint configuration
+React - UI kütüphanesi
+TypeScript - Tip güvenliği için
+Vite - Build ve development tool
+TanStack Query - Server state management
+React Hook Form - Form yönetimi
+Zustand - Client state management
+Tailwind CSS - Styling
+Zod - Form validasyonu
+React Hot Toast - Bildirimler
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Kurulum ve Çalıştırma
+Gereksinimler
 
-- Configure the top-level `parserOptions` property like this:
+Node.js (v14+)
+npm veya yarn
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+Adımlar
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+1- Depoyu klonlayın:
+git clone https://github.com/semanurgokirmak/Sirius-AI-Employee-Management-.git
+cd employee-management
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+2- Bağımlılıkları yükleyin:
+npm install
+# veya
+yarn
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+3- Geliştirme sunucusunu başlatın:
+npm run dev
+# veya
+yarn dev
+
+4- API sunucusunu kurulumu ve çalıştırma:
+# API reposunu klonlayın
+git clone https://github.com/mehmetasilkilic/employee-api.git
+cd employee-api
+
+# Bağımlılıkları yükleyin
+npm install
+
+# API sunucusunu başlatın
+npm start
+
+Proje Yapısı:
+src/
+├── api/
+│   └── employeeApi.ts     # API çağrıları
+├── components/
+│   └── employees/
+│       ├── DeleteConfirmation.tsx  # Silme onay dialogu
+│       ├── EmployeeForm.tsx        # Çalışan ekleme/düzenleme formu
+│       └── EmployeeList.tsx        # Çalışan listesi
+├── store/
+│   └── employeeStore.ts   # Zustand store
+├── types/
+│   └── employee.ts        # Tip tanımları
+├── utils/
+│   └── validation.ts      # Zod validasyon şemaları
+├── App.tsx                # Ana uygulama bileşeni
+└── main.tsx               # Entry point
+
+Özellikler ve Kullanım
+Çalışan Listesi
+• Çalışanlar listelenecektir
+• Sayfalama yapısı mevcuttur (sayfa başına 5 kayıt)
+• Her kayıt için Edit ve Delete butonları bulunur
+• Mobil cihazlarda, tabloda sadece isim ve aksiyon butonları görünür
+
+Çalışan Ekleme
+• "Add New Employee" butonuna tıklayın
+• Form alanlarını doldurun
+• Tüm validasyonları geçtiğinden emin olun
+• "Add Employee" butonuna tıklayın
+
+Çalışan Düzenleme
+• İlgili çalışanın "Edit" butonuna tıklayın
+• Formda gerekli değişiklikleri yapın
+• "Save Changes" butonuna tıklayın
+
+Çalışan Silme
+• İlgili çalışanın "Delete" butonuna tıklayın
+• Onay dialogunda silme işlemini onaylayın
+
+Form Validasyonları
+• İsim ve soyisim en az 2 karakter olmalı
+• Email formatı doğru olmalı
+• Telefon numarası formatı doğru olmalı
+• İşe giriş tarihi gelecekte olamaz
+• Departman ve pozisyon seçilmek zorunda
+
+API Entegrasyonu
+Uygulama, RESTful API ile iletişim kurar. API endpoint'leri:
+
+• GET /employees - Tüm çalışanları listeler
+• GET /employees/:id - Belirli bir çalışanın detaylarını getirir
+• POST /employees - Yeni çalışan ekler
+• PUT /employees/:id - Çalışan bilgilerini günceller
+• DELETE /employees/:id - Çalışanı siler
+
+Responsive Tasarım
+Uygulama, farklı ekran boyutlarına uyum sağlar:
+
+• Masaüstü: Tam tablo görünümü
+• Tablet: Tam tablo görünümü
+• Mobil: Sadeleştirilmiş görünüm (ad-soyad ve aksiyonlar)
+
+Gelecek Geliştirmeler
+
+• Arama ve filtreleme
+• Çalışanları Excel'e aktarma
+• Kullanıcı yetkilendirme
+• Daha gelişmiş filtreler
+• Çalışan profil sayfaları
