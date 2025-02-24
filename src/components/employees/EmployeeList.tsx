@@ -117,54 +117,57 @@ export const EmployeeList = () => {
           ) : (
             <>
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentEmployees.map((employee) => (
-                    <tr key={employee.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {employee.firstName} {employee.lastName}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{employee.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          employee.department === 'Tech' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {employee.department}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {employee.position}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex-shrink-0">
-                        <button 
-                          onClick={() => handleEdit(employee)}
-                          className="text-indigo-600 hover:text-indigo-900 mr-3 min-w-[40px]"
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(employee)}
-                          className="text-red-600 hover:text-red-900 min-w-[40px]"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+  <thead className="bg-gray-50">
+    <tr>
+      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Email</th>
+      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Department</th>
+      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Position</th>
+      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+    </tr>
+  </thead>
+  <tbody className="bg-white divide-y divide-gray-200">
+    {currentEmployees.map((employee) => (
+      <tr key={employee.id} className="hover:bg-gray-50">
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-sm font-medium text-gray-900">
+            {employee.firstName} {employee.lastName}
+          </div>
+          <div className="text-xs text-gray-500 md:hidden mt-1">
+            {employee.email} • {employee.department} • {employee.position}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+          <div className="text-sm text-gray-500">{employee.email}</div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+            employee.department === 'Tech' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+          }`}>
+            {employee.department}
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+          {employee.position}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex-shrink-0">
+          <button 
+            onClick={() => handleEdit(employee)}
+            className="text-indigo-600 hover:text-indigo-900 mr-3 min-w-[40px]"
+          >
+            Edit
+          </button>
+          <button 
+            onClick={() => handleDelete(employee)}
+            className="text-red-600 hover:text-red-900 min-w-[40px]"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
 
               {/* Pagination */}
               <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
