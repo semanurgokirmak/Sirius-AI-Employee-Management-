@@ -1,7 +1,7 @@
 import { Employee } from '../types/employee';
 
 // API'nin temel URL'ini tanımlıyoruz
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'https://employee-api-q3x5.onrender.com/api';
 
 // API'den dönen veri yapısı
 interface ApiResponse<T> {
