@@ -1,51 +1,63 @@
-Employee Management Application
-Bu proje, şirket çalışanlarının bilgilerini yönetmek için React ve TypeScript kullanılarak geliştirilmiş modern bir web uygulamasıdır.
+# Employee Management Application
 
-Özellikler
+<p>Bu proje, şirket çalışanlarının bilgilerini yönetmek için React ve TypeScript kullanılarak geliştirilmiş modern bir web uygulamasıdır.</p>
 
-Çalışan listesi görüntüleme
-Yeni çalışan ekleme
-Mevcut çalışan bilgilerini düzenleme
-Çalışan silme
-Form validasyonu
-Responsive tasarım
+## Özellikler
 
-Teknoloji Stack'i
+<ul>
+  <li>Çalışan listesi görüntüleme</li>
+  <li>Yeni çalışan ekleme</li>
+  <li>Mevcut çalışan bilgilerini düzenleme</li>
+  <li>Çalışan silme</li>
+  <li>Form validasyonu</li>
+  <li>Responsive tasarım</li>
+</ul>
 
-React - UI kütüphanesi
-TypeScript - Tip güvenliği için
-Vite - Build ve development tool
-TanStack Query - Server state management
-React Hook Form - Form yönetimi
-Zustand - Client state management
-Tailwind CSS - Styling
-Zod - Form validasyonu
-React Hot Toast - Bildirimler
+## Teknoloji Stack'i
 
-Kurulum ve Çalıştırma
-Gereksinimler
+<ul>
+  <li><strong>React</strong> - UI kütüphanesi</li>
+  <li><strong>TypeScript</strong> - Tip güvenliği için</li>
+  <li><strong>Vite</strong> - Build ve development tool</li>
+  <li><strong>TanStack Query</strong> - Server state management</li>
+  <li><strong>React Hook Form</strong> - Form yönetimi</li>
+  <li><strong>Zustand</strong> - Client state management</li>
+  <li><strong>Tailwind CSS</strong> - Styling</li>
+  <li><strong>Zod</strong> - Form validasyonu</li>
+  <li><strong>React Hot Toast</strong> - Bildirimler</li>
+</ul>
 
-Node.js (v14+)
-npm veya yarn
+## Kurulum ve Çalıştırma
 
-Adımlar
+<h3>Gereksinimler</h3>
+<ul>
+  <li>Node.js (v14+)</li>
+  <li>npm veya yarn</li>
+</ul>
 
-1- Depoyu klonlayın:
-git clone https://github.com/semanurgokirmak/Sirius-AI-Employee-Management-.git
-cd employee-management
+<h3>Adımlar</h3>
 
-2- Bağımlılıkları yükleyin:
-npm install
+<ol>
+  <li>
+    <p>Depoyu klonlayın:</p>
+    <pre><code>git clone https://github.com/your-username/employee-management.git
+cd employee-management</code></pre>
+  </li>
+  <li>
+    <p>Bağımlılıkları yükleyin:</p>
+    <pre><code>npm install
 # veya
-yarn
-
-3- Geliştirme sunucusunu başlatın:
-npm run dev
+yarn</code></pre>
+  </li>
+  <li>
+    <p>Geliştirme sunucusunu başlatın:</p>
+    <pre><code>npm run dev
 # veya
-yarn dev
-
-4- API sunucusunu kurulumu ve çalıştırma:
-# API reposunu klonlayın
+yarn dev</code></pre>
+  </li>
+  <li>
+    <p>API sunucusunu kurulumu ve çalıştırma:</p>
+    <pre><code># API reposunu klonlayın
 git clone https://github.com/mehmetasilkilic/employee-api.git
 cd employee-api
 
@@ -53,10 +65,13 @@ cd employee-api
 npm install
 
 # API sunucusunu başlatın
-npm start
+npm start</code></pre>
+  </li>
+</ol>
 
-Proje Yapısı:
-src/
+## Proje Yapısı
+
+<pre><code>src/
 ├── api/
 │   └── employeeApi.ts     # API çağrıları
 ├── components/
@@ -71,57 +86,74 @@ src/
 ├── utils/
 │   └── validation.ts      # Zod validasyon şemaları
 ├── App.tsx                # Ana uygulama bileşeni
-└── main.tsx               # Entry point
+└── main.tsx               # Entry point</code></pre>
 
-Özellikler ve Kullanım
-Çalışan Listesi
-• Çalışanlar listelenecektir
-• Sayfalama yapısı mevcuttur (sayfa başına 5 kayıt)
-• Her kayıt için Edit ve Delete butonları bulunur
-• Mobil cihazlarda, tabloda sadece isim ve aksiyon butonları görünür
+## Özellikler ve Kullanım
 
-Çalışan Ekleme
-• "Add New Employee" butonuna tıklayın
-• Form alanlarını doldurun
-• Tüm validasyonları geçtiğinden emin olun
-• "Add Employee" butonuna tıklayın
+<h3>Çalışan Listesi</h3>
 
-Çalışan Düzenleme
-• İlgili çalışanın "Edit" butonuna tıklayın
-• Formda gerekli değişiklikleri yapın
-• "Save Changes" butonuna tıklayın
+<ul>
+  <li>Çalışanlar listelenecektir</li>
+  <li>Sayfalama yapısı mevcuttur (sayfa başına 5 kayıt)</li>
+  <li>Her kayıt için Edit ve Delete butonları bulunur</li>
+  <li>Mobil cihazlarda, tabloda sadece isim ve aksiyon butonları görünür</li>
+</ul>
 
-Çalışan Silme
-• İlgili çalışanın "Delete" butonuna tıklayın
-• Onay dialogunda silme işlemini onaylayın
+<h3>Çalışan Ekleme</h3>
 
-Form Validasyonları
-• İsim ve soyisim en az 2 karakter olmalı
-• Email formatı doğru olmalı
-• Telefon numarası formatı doğru olmalı
-• İşe giriş tarihi gelecekte olamaz
-• Departman ve pozisyon seçilmek zorunda
+<ol>
+  <li>"Add New Employee" butonuna tıklayın</li>
+  <li>Form alanlarını doldurun</li>
+  <li>Tüm validasyonları geçtiğinden emin olun</li>
+  <li>"Add Employee" butonuna tıklayın</li>
+</ol>
 
-API Entegrasyonu
-Uygulama, RESTful API ile iletişim kurar. API endpoint'leri:
+<h3>Çalışan Düzenleme</h3>
 
-• GET /employees - Tüm çalışanları listeler
-• GET /employees/:id - Belirli bir çalışanın detaylarını getirir
-• POST /employees - Yeni çalışan ekler
-• PUT /employees/:id - Çalışan bilgilerini günceller
-• DELETE /employees/:id - Çalışanı siler
+<ol>
+  <li>İlgili çalışanın "Edit" butonuna tıklayın</li>
+  <li>Formda gerekli değişiklikleri yapın</li>
+  <li>"Save Changes" butonuna tıklayın</li>
+</ol>
 
-Responsive Tasarım
-Uygulama, farklı ekran boyutlarına uyum sağlar:
+<h3>Çalışan Silme</h3>
 
-• Masaüstü: Tam tablo görünümü
-• Tablet: Tam tablo görünümü
-• Mobil: Sadeleştirilmiş görünüm (ad-soyad ve aksiyonlar)
+<ol>
+  <li>İlgili çalışanın "Delete" butonuna tıklayın</li>
+  <li>Onay dialogunda silme işlemini onaylayın</li>
+</ol>
 
-Gelecek Geliştirmeler
+## Form Validasyonları
 
-• Arama ve filtreleme
-• Çalışanları Excel'e aktarma
-• Kullanıcı yetkilendirme
-• Daha gelişmiş filtreler
-• Çalışan profil sayfaları
+<ul>
+  <li>İsim ve soyisim en az 2 karakter olmalı</li>
+  <li>Email formatı doğru olmalı</li>
+  <li>Telefon numarası formatı doğru olmalı</li>
+  <li>İşe giriş tarihi gelecekte olamaz</li>
+  <li>Departman ve pozisyon seçilmek zorunda</li>
+</ul>
+
+## API Entegrasyonu
+
+<p>Uygulama, RESTful API ile iletişim kurar. API endpoint'leri:</p>
+
+<ul>
+  <li>GET <code>/employees</code> - Tüm çalışanları listeler</li>
+  <li>GET <code>/employees/:id</code> - Belirli bir çalışanın detaylarını getirir</li>
+  <li>POST <code>/employees</code> - Yeni çalışan ekler</li>
+  <li>PUT <code>/employees/:id</code> - Çalışan bilgilerini günceller</li>
+  <li>DELETE <code>/employees/:id</code> - Çalışanı siler</li>
+</ul>
+
+## Responsive Tasarım
+
+<p>Uygulama, farklı ekran boyutlarına uyum sağlar:</p>
+
+<ul>
+  <li>Masaüstü: Tam tablo görünümü</li>
+  <li>Tablet: Tam tablo görünümü</li>
+  <li>Mobil: Sadeleştirilmiş görünüm (ad-soyad ve aksiyonlar)</li>
+</ul>
+
+
+
