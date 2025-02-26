@@ -1,10 +1,11 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Employee } from '../../types/employee';
-import { employeeSchema, EmployeeFormData } from '../../utils/validation';
-import { useState, useEffect } from 'react';
-import { useEmployeeStore } from '../../store/employeeStore';
-import { useQueryClient } from '@tanstack/react-query';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Employee } from "../../types/employee";
+import { employeeSchema, EmployeeFormData } from "../../utils/validation";
+import { useState, useEffect } from "react";
+import { useEmployeeStore } from "../../store/employeeStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { LoaderIcon } from "../ui/Icons";
 
 interface EmployeeFormProps {
   isOpen: boolean;
@@ -12,10 +13,14 @@ interface EmployeeFormProps {
   employee?: Employee;
 }
 
-export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) => {
+export const EmployeeForm = ({
+  isOpen,
+  onClose,
+  employee,
+}: EmployeeFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
-  
+
   // Zustand store'dan action'ları alıyoruz
   const { createEmployee, updateEmployee } = useEmployeeStore();
 
@@ -23,7 +28,7 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeSchema),
   });
@@ -40,17 +45,17 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
         department: employee.department,
         position: employee.position,
         dateOfBirth: new Date(employee.dateOfBirth),
-        dateOfEmployment: new Date(employee.dateOfEmployment)
+        dateOfEmployment: new Date(employee.dateOfEmployment),
       });
     } else {
       // Yeni çalışan ekleme modunda formu temizliyoruz
       reset({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        department: ('' as unknown) as 'Analytics' | 'Tech',
-        position: ('' as unknown) as 'Junior' | 'Medior' | 'Senior',
+        firstName: "",
+        lastName: "",
+        email: "",
+        phoneNumber: "",
+        department: "" as unknown as "Analytics" | "Tech",
+        position: "" as unknown as "Junior" | "Medior" | "Senior",
         dateOfBirth: undefined,
         dateOfEmployment: undefined,
       });
@@ -67,12 +72,12 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
         // Ekleme işlemi
         await createEmployee(data);
       }
-      
+
       // Cache'i yenile
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
       onClose();
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error("Error submitting form:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -81,126 +86,159 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
   if (!isOpen) return null;
 
   const getInputClassName = (fieldName: keyof EmployeeFormData) => {
-    return `mt-1 block w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 
-    ${errors[fieldName] 
-      ? 'border-red-300 text-red-900 placeholder-red-300 focus:border-red-500 focus:ring-red-500' 
-      : 'border-gray-300'
-    }`;
+    const baseClasses =
+      "mt-1 block w-full px-3 py-2 bg-white dark:bg-dark-card border rounded-md text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-100 transition-all duration-150 ease-in-out";
+
+    return errors[fieldName]
+      ? `${baseClasses} border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500 dark:placeholder-red-300`
+      : `${baseClasses} border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400`;
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    <div
+      className={`fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 transition-opacity duration-200 ${
+        isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
       onClick={(e) => {
-        // İşlem devam ediyorsa kapanmayı engelle
         if (isSubmitting) return;
-        // Sadece arka plana tıklandığında kapanacak
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
     >
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">
-            {employee ? 'Edit Employee' : 'Add New Employee'}
-          </h3>
-          
-          <form className="mt-4" onSubmit={handleSubmit(handleFormSubmit)}>
+      <div className="relative top-20 mx-auto p-0 max-w-md animate-fadeIn">
+        <div className="bg-white dark:bg-dark-paper rounded-lg shadow-card dark:shadow-card-dark overflow-hidden transition-all duration-200">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-dark-border">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              {employee ? "Edit Employee" : "Add New Employee"}
+            </h3>
+          </div>
+
+          <form className="px-6 py-4" onSubmit={handleSubmit(handleFormSubmit)}>
             {/* Ad Soyad */}
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">First Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  First Name
+                </label>
                 <input
                   type="text"
-                  {...register('firstName')}
-                  className={getInputClassName('firstName')}
+                  {...register("firstName")}
+                  className={getInputClassName("firstName")}
                   disabled={isSubmitting}
+                  placeholder="John"
                 />
                 {errors.firstName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.firstName.message}
+                  </p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Last Name
+                </label>
                 <input
                   type="text"
-                  {...register('lastName')}
-                  className={getInputClassName('lastName')}
+                  {...register("lastName")}
+                  className={getInputClassName("lastName")}
                   disabled={isSubmitting}
+                  placeholder="Doe"
                 />
                 {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.lastName.message}
+                  </p>
                 )}
               </div>
             </div>
 
             {/* Email */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Email
+              </label>
               <input
                 type="email"
-                {...register('email')}
-                className={getInputClassName('email')}
+                {...register("email")}
+                className={getInputClassName("email")}
                 disabled={isSubmitting}
+                placeholder="john.doe@example.com"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             {/* Phone */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Phone Number
+              </label>
               <input
                 type="tel"
-                {...register('phoneNumber')}
-                className={getInputClassName('phoneNumber')}
+                {...register("phoneNumber")}
+                className={getInputClassName("phoneNumber")}
                 disabled={isSubmitting}
+                placeholder="+1234567890"
               />
               {errors.phoneNumber && (
-                <p className="mt-1 text-sm text-red-600">{errors.phoneNumber.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.phoneNumber.message}
+                </p>
               )}
             </div>
 
             {/* Dates */}
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Date of Birth
+                </label>
                 <input
                   type="date"
-                  {...register('dateOfBirth', {
-                    valueAsDate: true
+                  {...register("dateOfBirth", {
+                    valueAsDate: true,
                   })}
-                  className={getInputClassName('dateOfBirth')}
+                  className={getInputClassName("dateOfBirth")}
                   disabled={isSubmitting}
                 />
                 {errors.dateOfBirth && (
-                  <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth.message}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.dateOfBirth.message}
+                  </p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Employment Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Employment Date
+                </label>
                 <input
                   type="date"
-                  {...register('dateOfEmployment', {
-                    valueAsDate: true
+                  {...register("dateOfEmployment", {
+                    valueAsDate: true,
                   })}
-                  className={getInputClassName('dateOfEmployment')}
+                  className={getInputClassName("dateOfEmployment")}
                   disabled={isSubmitting}
                 />
                 {errors.dateOfEmployment && (
-                  <p className="mt-1 text-sm text-red-600">{errors.dateOfEmployment.message}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.dateOfEmployment.message}
+                  </p>
                 )}
               </div>
             </div>
 
             {/* Department */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Department</label>
-              <select 
-                {...register('department')}
-                className={getInputClassName('department')}
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Department
+              </label>
+              <select
+                {...register("department")}
+                className={getInputClassName("department")}
                 disabled={isSubmitting}
               >
                 <option value="">Select Department</option>
@@ -208,16 +246,20 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
                 <option value="Analytics">Analytics</option>
               </select>
               {errors.department && (
-                <p className="mt-1 text-sm text-red-600">{errors.department.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.department.message}
+                </p>
               )}
             </div>
 
             {/* Position */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Position</label>
-              <select 
-                {...register('position')}
-                className={getInputClassName('position')}
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Position
+              </label>
+              <select
+                {...register("position")}
+                className={getInputClassName("position")}
                 disabled={isSubmitting}
               >
                 <option value="">Select Position</option>
@@ -226,35 +268,36 @@ export const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) =
                 <option value="Senior">Senior</option>
               </select>
               {errors.position && (
-                <p className="mt-1 text-sm text-red-600">{errors.position.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.position.message}
+                </p>
               )}
             </div>
 
             {/* Buttons */}
-            <div className="flex justify-end gap-4 mt-6">
+            <div className="flex justify-end gap-3 mt-6 border-t dark:border-dark-border pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-dark-card border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-dark-border transition-colors disabled:opacity-50"
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 rounded-md transition-colors disabled:opacity-70 flex items-center justify-center min-w-[100px]"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
+                    <LoaderIcon />
+                    <span className="ml-2">Saving...</span>
                   </>
+                ) : employee ? (
+                  "Save Changes"
                 ) : (
-                  employee ? 'Save Changes' : 'Add Employee'
+                  "Add Employee"
                 )}
               </button>
             </div>

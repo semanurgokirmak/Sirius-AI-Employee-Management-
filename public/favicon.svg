@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="8" fill="#5D87FF" />
+  <path
+    d="M24 10H20V8C20 6.89 19.11 6 18 6H14C12.89 6 12 6.89 12 8V10H8C6.89 10 6.01 10.89 6.01 12L6 24C6 25.11 6.89 26 8 26H24C25.11 26 26 25.11 26 24V12C26 10.89 25.11 10 24 10ZM14 8H18V10H14V8ZM16 21C14.35 21 13 19.65 13 18C13 16.35 14.35 15 16 15C17.65 15 19 16.35 19 18C19 19.65 17.65 21 16 21Z"
+    fill="white" />
+  <style>
+    @media (prefers-color-scheme: dark) {
+      rect {
+        fill: #4B6CD9;
+      }
+    }
+  </style>
+</svg>

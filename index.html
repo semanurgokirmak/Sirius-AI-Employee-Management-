@@ -3,8 +3,22 @@
 
 <head>
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Employee Management</title>
+  <meta name="description" content="Employee management application for tracking and managing employee data">
+  <meta name="theme-color" content="#5D87FF" />
+  <script>
+    // İlk yüklendiğinde localStorage'daki tema tercihini al
+    const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+    // HTML'e dark class'ını ekle (eğer tema dark ise)
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+  <title>EmployeeHub - Employee Management System</title>
 </head>
 
 <body>
